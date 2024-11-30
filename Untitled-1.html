@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão</title>
+    <style>
+        /* Definição de variáveis de cores */
+        :root {
+            --primary-color: #96B6B7;
+            --secondary-color: #E8F0F0;
+            --text-color: #1A2E2E;
+            --white: #ffffff;
+        }
+
+        /* Estilos gerais */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 120px 0 0 0;
+            background-color: var(--secondary-color);
+        }
+
+        /* Barra superior fixa */
+        .topbar {
+            background-color: #e0e0e0;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            color: #0066ff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Segunda barra de navegação */
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 10px 20px;
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .navbar a {
+            color: var(--white);
+            text-decoration: none;
+            padding: 5px 15px;
+            margin: 0 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Grid para a página inicial */
+        #inicio .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        /* Boxes de conteúdo */
+        .box {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Estilo dos itens de tarefa */
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .task-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .task-item.completed span {
+            color: #888;
+            text-decoration: line-through;
+        }
+
+        /* Estilo das reuniões */
+        .meeting-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+        }
+
+        .empty-meetings {
+            color: #888;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        /* Estilo dos botões */
+        button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Estilos para as seções */
+        #inicio, #avisos, #reunioes, #tarefas, #adicionar-reuniao {
+            display: none;
+        }
+
+        #inicio { display: block; }
+
+        /* Estilo para o formulário de adicionar reunião */
+        #adicionar-reuniao form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #adicionar-reuniao input {
+            padding: 10px;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra superior -->
+    <div class="topbar">
+        <span class="logo">Startup</span>
+    </div>
+
+    <!-- Segunda barra de navegação -->
+    <div class="navbar">
+        <a href="#" onclick="mostrarSecao('inicio')">Início</a>
+        <a href="#" onclick="mostrarSecao('avisos')">Avisos</a>
+        <a href="#" onclick="mostrarSecao('reunioes')">Reuniões</a>
+        <a href="#" onclick="mostrarSecao('tarefas')">Tarefas</a>
+    </div>
+
+    <!-- Seção Inicial -->
+    <div id="inicio">
+        <div class="container">
+            <!-- Box de Avisos -->
+            <div class="box">
+                <h2>Avisos Recentes</h2>
+                <div id="lista-avisos-inicio"></div>
+            </div>
+
+            <!-- Box de Reuniões -->
+            <div class="box">
+                <h2>Próximas Reuniões</h2>
+                <div id="lista-reunioes-inicio"></div>
+            </div>
+
+            <!-- Box de Tarefas -->
+            <div class="box">
+                <h2>Tarefas Pendentes</h2>
+                <div id="lista-tarefas-inicio"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Avisos -->
+    <div id="avisos" style="display: none;">
+        <div class="container">
+            <div class="box">
+                <h2>Todos os Avisos</h2>
+                <div id="lista-avisos"></div>
+                <button onclick="adicionarAviso()">Adicionar Aviso</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Reuniões -->
+    <div id="reunioes" style="display: none;">
+        <div class="container">
+            <div class="box">
+                <h2>Reuniões Agendadas</h2>
+                <div id="lista-reunioes"></div>
+                <button onclick="mostrarSecao('adicionar-reuniao')">Agendar Reunião</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Tarefas -->
+    <div id="tarefas" style="display: none;">
+        <div class="container">
+            <div class="box">
+                <h2>Lista de Tarefas</h2>
+                <div id="lista-tarefas"></div>
+                <button onclick="adicionarTarefa()">Adicionar Tarefa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Adicionar Reunião -->
+    <div id="adicionar-reuniao" style="display: none;">
+        <div class="container">
+            <div class="box">
+                <h2>Agendar Nova Reunião</h2>
+                <form onsubmit="adicionarReuniao(event)">
+                    <input type="text" id="titulo-reuniao" placeholder="Título da Reunião" required>
+                    <input type="datetime-local" id="data-reuniao" required>
+                    <button type="submit">Agendar</button>
+                </form>
+                <button onclick="mostrarSecao('reunioes')">Voltar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Arrays para armazenar os dados
+        let avisos = [];
+        let reunioes = [];
+        let tarefas = [];
+
+        function mostrarSecao(secao) {
+            document.getElementById('inicio').style.display = 'none';
+            document.getElementById('avisos').style.display = 'none';
+            document.getElementById('reunioes').style.display = 'none';
+            document.getElementById('tarefas').style.display = 'none';
+            document.getElementById('adicionar-reuniao').style.display = 'none';
+            document.getElementById(secao).style.display = 'block';
+
+            if (secao === 'inicio') {
+                atualizarPaginaInicial();
+            }
+        }
+
+        function adicionarAviso() {
+            const aviso = prompt('Digite o aviso:');
+            if (aviso) {
+                avisos.push({ texto: aviso, data: new Date() });
+                atualizarListaAvisos();
+                atualizarPaginaInicial();
+            }
+        }
+
+        function adicionarReuniao(event) {
+            event.preventDefault();
+            const titulo = document.getElementById('titulo-reuniao').value;
+            const data = new Date(document.getElementById('data-reuniao').value);
+            if (titulo && data) {
+                reunioes.push({ titulo, data });
+                atualizarListaReunioes();
+                atualizarPaginaInicial();
+                mostrarSecao('reunioes');
+            }
+        }
+
+        function adicionarTarefa() {
+            const tarefa = prompt('Digite a tarefa:');
+            if (tarefa) {
+                tarefas.push({ texto: tarefa, concluida: false });
+                atualizarListaTarefas();
+                atualizarPaginaInicial();
+            }
+        }
+
+        function toggleTaskCompletion(index) {
+            tarefas[index].concluida = !tarefas[index].concluida;
+            atualizarListaTarefas();
+            atualizarPaginaInicial();
+        }
+
+        function atualizarListaAvisos() {
+            const listaAvisos = document.getElementById('lista-avisos');
+            listaAvisos.innerHTML = '';
+            avisos.forEach((aviso, index) => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                div.innerHTML = `
+                    <span>${aviso.texto}</span>
+                    <button onclick="removerAviso(${index})">Remover</button>
+                `;
+                listaAvisos.appendChild(div);
+            });
+        }
+
+        function atualizarListaReunioes() {
+            const listaReunioes = document.getElementById('lista-reunioes');
+            listaReunioes.innerHTML = '';
+            reunioes.forEach((reuniao, index) => {
+                const div = document.createElement('div');
+                div.className = 'meeting-item';
+                div.innerHTML = `
+                    <span>${reuniao.titulo} - ${reuniao.data.toLocaleString()}</span>
+                    <button onclick="removerReuniao(${index})">Remover</button>
+                `;
+                listaReunioes.appendChild(div);
+            });
+        }
+
+        function atualizarListaTarefas() {
+            const listaTarefas = document.getElementById('lista-tarefas');
+            listaTarefas.innerHTML = '';
+            tarefas.forEach((tarefa, index) => {
+                const div = document.createElement('div');
+                div.className = `task-item ${tarefa.concluida ? 'completed' : ''}`;
+                div.innerHTML = `
+                    <input type="checkbox" ${tarefa.concluida ? 'checked' : ''} onchange="toggleTaskCompletion(${index})">
+                    <span>${tarefa.texto}</span>
+                    <button onclick="removerTarefa(${index})">Remover</button>
+                `;
+                listaTarefas.appendChild(div);
+            });
+        }
+
+        function atualizarPaginaInicial() {
+            const listaAvisosInicio = document.getElementById('lista-avisos-inicio');
+            const listaReunioesInicio = document.getElementById('lista-reunioes-inicio');
+            const listaTarefasInicio = document.getElementById('lista-tarefas-inicio');
+
+            listaAvisosInicio.innerHTML = '';
+            listaReunioesInicio.innerHTML = '';
+            listaTarefasInicio.innerHTML = '';
+
+            // Mostrar apenas os 3 avisos mais recentes
+            avisos.slice(-3).forEach(aviso => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                div.innerHTML = `<span>${aviso.texto}</span>`;
+                listaAvisosInicio.appendChild(div);
+            });
+
+            // Mostrar apenas reuniões futuras
+            const hoje = new Date();
+            reunioes.filter(reuniao => reuniao.data > hoje)
+                    .slice(0, 3)
+                    .forEach(reuniao => {
+                const div = document.createElement('div');
+                div.className = 'meeting-item';
+                div.innerHTML = `<span>${reuniao.titulo} - ${reuniao.data.toLocaleString()}</span>`;
+                listaReunioesInicio.appendChild(div);
+            });
+
+            // Mostrar apenas tarefas não concluídas
+            tarefas.filter(tarefa => !tarefa.concluida)
+                   .slice(0, 3)
+                   .forEach((tarefa, index) => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                div.innerHTML = `
+                    <input type="checkbox" onchange="toggleTaskCompletion(${index})">
+                    <span>${tarefa.texto}</span>
+                `;
+                listaTarefasInicio.appendChild(div);
+            });
+        }
+
+        function removerAviso(index) {
+            avisos.splice(index, 1);
+            atualizarListaAvisos();
+            atualizarPaginaInicial();
+        }
+
+        function removerReuniao(index) {
+            reunioes.splice(index, 1);
+            atualizarListaReunioes();
+            atualizarPaginaInicial();
+        }
+
+        function removerTarefa(index) {
+            tarefas.splice(index, 1);
+            atualizarListaTarefas();
+            atualizarPaginaInicial();
+        }
+
+        // Inicializar a página
+        atualizarListaAvisos();
+        atualizarListaReunioes();
+        atualizarListaTarefas();
+        atualizarPaginaInicial();
+    </script>
+</body>
+</html>
